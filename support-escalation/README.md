@@ -1,0 +1,65 @@
+# Keycard Workshop: Support Escalation MCP Server
+
+An MCP server that lets an AI agent triage customer support tickets and escalate them to engineering as Linear issues.
+
+It works. It is also **deliberately insecure** — that's the point. Over the workshop you'll find the leaks and fix them with [Keycard](https://keycard.ai).
+
+## What it does
+
+| Tool | What it does |
+| --- | --- |
+| `get_support_tickets` | Reads support tickets (local JSON for now) |
+| `escalate_ticket` | Creates a Linear issue from a ticket |
+| `delete_issue` | Trashes a Linear issue |
+
+## Prerequisites
+
+- Node.js >= 22.9 (the npm scripts use `--env-file-if-exists`, which older Node doesn't have)
+- The shared workshop Linear API key and team ID (provided by the instructor)
+
+## Setup
+
+```bash
+npm install
+cp .env.example .env
+# paste LINEAR_API_KEY into .env
+npm run dev
+```
+
+The server speaks Streamable HTTP at `http://localhost:8000/mcp`. Leave `npm run dev` running and connect your coding agent to that URL.
+
+## Connect your agent
+
+**Claude Code** (and any client that supports HTTP MCP directly):
+
+```bash
+claude mcp add --transport http support-escalation http://localhost:8000/mcp
+```
+
+**Claude Desktop** (its config only launches stdio servers, so bridge with `mcp-remote`). Edit `claude_desktop_config.json` and add:
+
+```json
+{
+  "mcpServers": {
+    "support-escalation": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "http://localhost:8000/mcp"]
+    }
+  }
+}
+```
+
+Then fully quit and reopen Claude Desktop. (The server must already be running when the client connects.)
+
+**Codex CLI** (supports HTTP MCP directly). Edit `~/.codex/config.toml` and add:
+
+```toml
+[mcp_servers.support-escalation]
+url = "http://localhost:8000/mcp"
+```
+
+Once connected, ask your agent to look at the open support tickets and escalate one to engineering.
+
+## Workshop
+
+The chapter-by-chapter guide lives on the workshop docs site. Start at the first chapter and work through in order.
