@@ -43,8 +43,15 @@ export function registerEscalateTicket(server: McpServer): void {
         url: z.string().describe("Link to the created Linear issue"),
       },
     },
-    async ({ ticketId }) => {
-      const ticket = getTicket(ticketId);
+    async ({ ticketId }, extra) => {
+      // The datastore read inside this tool is a read like any other: it
+      // happens as the caller, so it needs the caller's verified token.
+      const auth = extra.authInfo;
+      if (!auth) {
+        throw new Error("Request has no auth info — is requireBearerAuth mounted on /mcp?");
+      }
+
+      const ticket = await getTicket(ticketId, auth);
       if (!ticket) {
         throw new Error(`No support ticket found with id ${ticketId}`);
       }

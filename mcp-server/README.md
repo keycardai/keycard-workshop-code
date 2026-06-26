@@ -8,7 +8,7 @@ It works. It is also **deliberately insecure** — that's the point. Over the wo
 
 | Tool | What it does |
 | --- | --- |
-| `get_support_tickets` | Reads support tickets (local JSON for now) |
+| `get_support_tickets` | Reads support tickets (Supabase, credential brokered per request by Keycard) |
 | `escalate_ticket` | Creates a Linear issue from a ticket |
 | `delete_issue` | Trashes a Linear issue |
 
@@ -26,7 +26,9 @@ cp .env.example .env
 npm run dev
 ```
 
-This checkpoint is the Keycard-protected server from Chapter 2, so `.env` also needs your `KEYCARD_URL` and `MCP_RESOURCE_URL` (both explained in `.env.example`). Without them the server exits at startup with a message telling you what's missing.
+This checkpoint is the server as of Chapter 4, so `.env` also needs your `KEYCARD_URL` and `MCP_RESOURCE_URL` (Chapter 2), plus `KEYCARD_CLIENT_ID`, `KEYCARD_CLIENT_SECRET`, and `SUPABASE_URL` (Chapter 4). All five are explained in `.env.example`. Without them the server exits at startup with a message telling you what's missing.
+
+Tickets now come from Supabase. The database's secret API key is **not** in `.env`; the server obtains it per request from Keycard's vault via token exchange. If you're running your own Supabase project instead of the workshop's shared one, seed it with `data/seed.sql` first.
 
 The server speaks Streamable HTTP at `http://localhost:8000/mcp`. Leave `npm run dev` running and connect your coding agent to that URL.
 

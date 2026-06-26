@@ -18,16 +18,25 @@ export function registerGetTickets(server: McpServer): void {
         tickets: z.array(TicketSchema),
       },
     },
-    async ({ ticketId }) => {
+    async ({ ticketId }, extra) => {
+      // requireBearerAuth verified the caller's token before the request ever
+      // reached the MCP transport; the SDK hands it to every tool handler as
+      // `extra.authInfo`. That token is the subject of the datastore exchange:
+      // this read happens *as someone*.
+      const auth = extra.authInfo;
+      if (!auth) {
+        throw new Error("Request has no auth info — is requireBearerAuth mounted on /mcp?");
+      }
+
       let tickets: Ticket[];
       if (ticketId) {
-        const ticket = getTicket(ticketId);
+        const ticket = await getTicket(ticketId, auth);
         if (!ticket) {
           throw new Error(`No support ticket found with id ${ticketId}`);
         }
         tickets = [ticket];
       } else {
-        tickets = loadTickets();
+        tickets = await loadTickets(auth);
       }
 
       // Both forms carry the same { tickets } shape: structuredContent for
