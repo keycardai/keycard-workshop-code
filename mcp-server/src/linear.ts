@@ -1,5 +1,5 @@
 /**
- * A minimal Linear client: two GraphQL mutations over plain fetch.
+ * A minimal Linear client: a few GraphQL operations over plain fetch.
  *
  * Credential acquisition is deliberately isolated at the top of each
  * function. Right now it's a shared, over-permissioned personal API key
@@ -51,8 +51,36 @@ export interface CreatedIssue {
   url: string;
 }
 
+/**
+ * Resolve workspace label names to Linear label IDs. Linear's issueCreate
+ * matches labels by ID, not name, so the LLM's label names (see pii.ts)
+ * get translated here, at the last moment before the issue is created.
+ */
+export async function getLabelIds(names: string[]): Promise<string[]> {
+  const apiKey = requireEnv("LINEAR_API_KEY");
+
+  const data = await linearRequest<{
+    issueLabels: { nodes: { id: string }[] };
+  }>(
+    apiKey,
+    `query LabelIds($names: [String!]!) {
+      issueLabels(filter: { name: { in: $names } }) {
+        nodes { id }
+      }
+    }`,
+    { names },
+  );
+
+  return data.issueLabels.nodes.map((node) => node.id);
+}
+
 /** Create a Linear issue in the workshop team. `priority` is a Linear priority int (0 none, 1 urgent … 4 low). */
-export async function createIssue(title: string, description: string, priority: number): Promise<CreatedIssue> {
+export async function createIssue(
+  title: string,
+  description: string,
+  priority: number,
+  labelIds: string[],
+): Promise<CreatedIssue> {
   const apiKey = requireEnv("LINEAR_API_KEY");
   const teamId = requireEnv("LINEAR_TEAM_ID");
 
@@ -66,7 +94,7 @@ export async function createIssue(title: string, description: string, priority: 
         issue { id identifier url }
       }
     }`,
-    { input: { teamId, title, description, priority } },
+    { input: { teamId, title, description, priority, labelIds } },
   );
 
   if (!data.issueCreate.success || !data.issueCreate.issue) {
