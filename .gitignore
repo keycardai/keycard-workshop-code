@@ -1,0 +1,27 @@
+# Internal planning docs (contain working notes and, in the content doc, shared
+# workshop credentials). Keep these in the private Google doc, not the repo.
+WORKSHOP-CONTENT.md
+WORKSHOP-BUILD-PLAN.md
+TEST-RUN-PROMPTS.md
+WORKSHOP-SKILL-SPEC.md
+COLD-TEST-GUIDE.md
+
+# Dependencies and build output
+node_modules/
+dist/
+
+# Break-glass checkpoint output (scripts/generate-checkpoints.sh writes here)
+_recovery/
+
+# Local secrets — the .env story is the whole workshop; never commit it
+.env
+
+# Keycard CLI writes this when authorizing resources; the workshop uses .env,
+# not keycard.toml, and it would pin one person's zone/org. Never commit it.
+keycard.toml
+
+# Local Claude Code settings — but DO ship .claude/skills/ (the workshop helper
+# skill must reach attendees on `git clone`, zero install).
+.claude/settings.json
+.claude/settings.local.json
+.vscode/

@@ -1,0 +1,28 @@
+{
+  "name": "support-escalation-mcp",
+  "version": "0.1.0",
+  "description": "Support-ticket escalation MCP server — the deliberately insecure starting point for the Keycard workshop",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=22.9.0"
+  },
+  "scripts": {
+    "dev": "tsx watch --env-file-if-exists=.env src/server.ts",
+    "build": "tsc",
+    "start": "node --env-file-if-exists=.env dist/server.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@keycardai/mcp": "0.10.0",
+    "@modelcontextprotocol/sdk": "1.29.0",
+    "express": "5.2.1",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@types/express": "5.0.6",
+    "@types/node": "26.0.0",
+    "tsx": "4.22.4",
+    "typescript": "6.0.3"
+  }
+}

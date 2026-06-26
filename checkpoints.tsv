@@ -1,0 +1,11 @@
+# Checkpoint manifest: <tag><TAB><name><TAB><end-of-chapter>
+# Source of truth = the cp-* tags (one per checkpoint, app at mcp-server/).
+# The two endpoint checkpoints ship pre-built, so you never generate them:
+# support-escalation/ is Chapter 0 (your working copy) and mcp-server/ is the
+# finished server (Chapters 6-7). generate-checkpoints.sh materializes the
+# in-between ones (Chapters 2, 4, 5) on demand as a break-glass.
+cp-0	support-escalation	0
+cp-1	keycard-protected	2
+cp-2	vault-datastore	4
+cp-3	llm-masking	5
+cp-4	mcp-server	6-7

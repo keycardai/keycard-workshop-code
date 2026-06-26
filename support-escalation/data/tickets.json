@@ -1,0 +1,62 @@
+[
+  {
+    "id": "3f9a2b1c-7d4e-4a8b-9c6f-1e2d3a4b5c6d",
+    "created_at": "2026-06-02T14:23:00Z",
+    "customer_name": "Marisol Vexley",
+    "email": "marisol.vexley@acme-corp.example",
+    "phone": "555-0142",
+    "plan_tier": "enterprise",
+    "severity": "critical",
+    "status": "open",
+    "subject": "Payment portal charges card twice on retry",
+    "body": "We got charged twice for invoice INV-8841. The payment page timed out, so I tried again, and now there are two of the same charges on my card. I already filled out your refund verification form once and nothing happened, so here it is again:\n\nName: Marisol Vexley\nCard: 4242 4242 4242 4242 (Visa, exp 12/28)\nSSN (identity check): 900-12-3456\nBilling address: 1184 Corvid Lane, Apt 4B, New Carthage, OH 44199\n\nYou need to refund the second charge today, please. Our finance team reconciles on Fridays and this is going to get flagged!!"
+  },
+  {
+    "id": "8c1d4e7f-2a5b-4c9d-8e1f-6a7b8c9d0e1f",
+    "created_at": "2026-06-03T09:11:00Z",
+    "customer_name": "Dashiell Okonkwo-Brandt",
+    "email": "d.okonkwo.brandt@globex.test",
+    "phone": "555-0117",
+    "plan_tier": "pro",
+    "severity": "high",
+    "status": "open",
+    "subject": "Webhook deliveries silently stopped after region migration",
+    "body": "Our webhooks stopped working sometime around June 2 and we didn't notice for 3 days because nothing errored, they just stopped. Nothing changed on our end. The only thing that changed at all since then is your team migrated our account to eu-west that week. Endpoint is https://hooks.globex.test/ingest. I'm pasting our config from the dashboard in case something got dropped in the migration: signing secret whsec_test_565862673125, all event types enabled. Can someone check whether your side is still sending webhook events to our endpoint at all, or if they started failing silently after the migration?"
+  },
+  {
+    "id": "b5e8f0a3-9c2d-4e6f-a1b4-3c5d7e9f0a2b",
+    "created_at": "2026-06-04T16:47:00Z",
+    "customer_name": "Petronella Quist",
+    "email": "pquist@initech.example",
+    "phone": "555-0186",
+    "plan_tier": "free",
+    "severity": "medium",
+    "status": "open",
+    "subject": "CSV export truncates rows above 10k",
+    "body": "The CSV export keeps cutting off my data. I export my full contact list and the file always ends at exactly row 10K. There are no errors or warnings at all. Heres the last two rows of yesterdays' file:\n\n9999, jdoe@customer-corp.example, active, 2026-05-30\n10000, fbarnes@customer-corp.example, active, 2026-05-30\n\nThere should be about 14K rows. Exactly 10,000 feels like a limit somewhere on your side?"
+  },
+  {
+    "id": "d2c6a9e4-1f3b-4d7c-b8e0-5a6f8c0d2e4b",
+    "created_at": "2026-06-05T11:02:00Z",
+    "customer_name": "Bartholomew Cole",
+    "email": "bart.cole@umbrella-labs.test",
+    "phone": "555-0163",
+    "plan_tier": "enterprise",
+    "severity": "high",
+    "status": "in_progress",
+    "subject": "SSO login loops back to sign-in page",
+    "body": "I can't get past your SSO. I pick our idp, log in fine on our side, and your site bounces me straight back to the login page over and over. Your support chat asked me for a HAR file so that's attached. The looping request looks like this, if it helps: authorization: Bearer eyJhbGciOiJub25lIn0.lkjdfg89alkjeoit.lqwoinvo9. the RelayState in the callback is just empty. I tried two different browsers and incognito, and get this same loop every time."
+  },
+  {
+    "id": "f7b3d5c8-4e0a-4b2d-9f6e-8c1a3b5d7e9f",
+    "created_at": "2026-06-06T08:30:00Z",
+    "customer_name": "Ottoline Vance",
+    "email": "ottoline.vance@hooli.example",
+    "phone": "555-0199",
+    "plan_tier": "pro",
+    "severity": "low",
+    "status": "open",
+    "subject": "Dark mode resets to light on every deploy",
+    "body": "Every time you ship an update, my theme flips back to light mode and I have to turn dark mode on again. This has happened after all of the last three releases. It's small but annoying because it keeps happening. Please fix, thanks!"
+  }
+]
