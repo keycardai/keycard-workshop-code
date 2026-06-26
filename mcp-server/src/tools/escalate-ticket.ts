@@ -1,5 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { APP_CLIENT_ID } from "../keycard.js";
 import { createIssue, getLabelIds } from "../linear.js";
 import { EntityTypeSchema, maskTicket } from "../pii.js";
 import { getTicket } from "../tickets.js";
@@ -27,8 +28,7 @@ const PRIORITY_BY_SEVERITY = {
  * issue that lands in Linear carries that rewritten content, non-PII
  * metadata, and the ticket UUID; anyone who legitimately needs the
  * customer's identity follows the UUID back into the support system,
- * where PII is allowed to live. Linear itself still gets the shared god
- * key for one more chapter.
+ * where PII is allowed to live.
  */
 export function registerEscalateTicket(server: McpServer): void {
   server.registerTool(
@@ -55,9 +55,9 @@ export function registerEscalateTicket(server: McpServer): void {
       },
     },
     async ({ ticketId }, extra) => {
-      // requireBearerAuth verified the caller's token back in Chapter 2.
-      // Both exchanges in this tool — the datastore read and the masking
-      // call — happen as that caller.
+      // requireBearerAuth already verified the caller's token. Every exchange
+      // in this tool — the datastore read, the masking call, and the Linear
+      // posting — happens as that caller.
       const auth = extra.authInfo;
       if (!auth) {
         throw new Error("Request has no auth info — is requireBearerAuth mounted on /mcp?");
@@ -82,11 +82,16 @@ export function registerEscalateTicket(server: McpServer): void {
         "---",
         `**Plan:** ${ticket.plan_tier} · **Severity:** ${ticket.severity}`,
         `**Support ticket:** ${ticket.id}`,
+        "---",
+        // The app's own client id — the actor on every credential exchange in
+        // the audit log, and the value in your .env (KEYCARD_CLIENT_ID). Built
+        // server-side, so the footer can't be forged by the agent or caller.
+        `Submitted by Keycard app \`${APP_CLIENT_ID}\` via Support Escalation MCP`,
       ].join("\n\n");
 
       const priority = PRIORITY_BY_SEVERITY[ticket.severity];
-      const labelIds = await getLabelIds(masked.labels);
-      const issue = await createIssue(title, description, priority, labelIds);
+      const labelIds = await getLabelIds(masked.labels, auth);
+      const issue = await createIssue(title, description, priority, labelIds, auth);
 
       const result = {
         ticketId: ticket.id,
