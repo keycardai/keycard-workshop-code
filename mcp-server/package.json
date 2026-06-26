@@ -1,7 +1,7 @@
 {
   "name": "support-escalation-mcp",
   "version": "0.1.0",
-  "description": "Support-ticket escalation MCP server — the deliberately insecure starting point for the Keycard workshop",
+  "description": "Support-ticket escalation MCP server for the Keycard workshop (reference implementation, secured through Chapter 6)",
   "type": "module",
   "private": true,
   "engines": {
@@ -11,6 +11,7 @@
     "dev": "tsx watch --env-file-if-exists=.env src/server.ts",
     "build": "tsc",
     "start": "node --env-file-if-exists=.env dist/server.js",
+    "test": "node --import tsx --test src/**/*.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

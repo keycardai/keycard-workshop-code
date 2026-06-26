@@ -19,8 +19,15 @@ export function registerDeleteIssue(server: McpServer): void {
         issueId: z.string(),
       },
     },
-    async ({ issueId }) => {
-      await trashIssue(issueId);
+    async ({ issueId }, extra) => {
+      // requireBearerAuth already verified the caller's token; the Linear
+      // exchange happens as that caller.
+      const auth = extra.authInfo;
+      if (!auth) {
+        throw new Error("Request has no auth info — is requireBearerAuth mounted on /mcp?");
+      }
+
+      await trashIssue(issueId, auth);
 
       const result = { success: true, issueId };
       return {

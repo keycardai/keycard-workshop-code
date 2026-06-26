@@ -15,7 +15,7 @@ It works. It is also **deliberately insecure** — that's the point. Over the wo
 ## Prerequisites
 
 - Node.js >= 22.9 (the npm scripts use `--env-file-if-exists`, which older Node doesn't have)
-- The shared workshop Linear API key and team ID (provided by the instructor)
+- The shared workshop Linear team ID (provided by the instructor)
 
 ## Setup
 
@@ -26,16 +26,16 @@ cp .env.example .env
 npm run dev
 ```
 
-This checkpoint is the server as of Chapter 5, so `.env` needs:
+This checkpoint is the server as of Chapter 6, so `.env` needs:
 
-- `LINEAR_API_KEY` + `LINEAR_TEAM_ID` — the shared workshop Linear key and team (Chapter 0)
+- `LINEAR_TEAM_ID` — the Linear team escalations go to (Chapter 0; the shared `LINEAR_API_KEY` that used to sit next to it is gone as of Chapter 6)
 - `KEYCARD_URL` + `MCP_RESOURCE_URL` — bearer auth on `/mcp` (Chapter 2)
 - `KEYCARD_CLIENT_ID` + `KEYCARD_CLIENT_SECRET` — the application's own credentials, used for token exchange (Chapter 4)
 - `SUPABASE_URL` — where the tickets live; doubles as the vault resource identifier (Chapter 4)
 
 Each one is explained in `.env.example`. Without them the server exits at startup with a message telling you what's missing.
 
-Two credentials are deliberately **not** in `.env`: the Supabase secret API key and the Anthropic API key both live in Keycard's vault, and the server exchanges the caller's token for them per request.
+No downstream credential lives in `.env` anymore: the Supabase secret API key and the Anthropic API key come from Keycard's vault, and Linear access is brokered per request through the shared workshop OAuth app, all exchanged with the caller's own token as the subject.
 
 If you're running your own Supabase project instead of the workshop's shared one, seed it with `data/seed.sql` first.
 

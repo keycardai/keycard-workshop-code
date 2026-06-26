@@ -2,15 +2,15 @@
  * A minimal Linear client: a few GraphQL operations over plain fetch.
  *
  * Credential acquisition is deliberately isolated at the top of each
- * function. Right now it's a shared, over-permissioned personal API key
- * pulled from .env. Later in the workshop we swap *only* that part for a
- * per-user, least-privilege token from Keycard; the GraphQL calls below
- * don't change.
+ * function. The shared personal API key that used to live here is gone:
+ * every function now exchanges the caller's token for a delegated Linear
+ * credential, requesting only the scope its one operation needs. The
+ * GraphQL calls themselves never changed.
  */
+import type { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
+import { exchangeForCredential } from "./keycard.js";
 
-const LINEAR_GRAPHQL_URL = "https://api.linear.app/graphql";
-
-/** Read a required env var, failing with a useful message instead of a cryptic 401 later. */
+/** Read a required env var, failing with a useful message instead of a cryptic error later. */
 function requireEnv(name: string): string {
   const value = process.env[name];
   if (!value) {
@@ -19,14 +19,25 @@ function requireEnv(name: string): string {
   return value;
 }
 
+// Linear's API origin doubles as the resource identifier registered in your
+// zone — exact string match, like every exchange. Pinned from .env (like
+// ANTHROPIC_API_URL), not hardcoded.
+const LINEAR_API_URL = requireEnv("LINEAR_API_URL");
+const LINEAR_GRAPHQL_URL = `${LINEAR_API_URL}/graphql`;
+
+// Linear team to create escalation issues in. Config, not a credential —
+// both it and LINEAR_API_URL live in .env.
+const LINEAR_TEAM_ID = requireEnv("LINEAR_TEAM_ID");
+
 /** POST a GraphQL operation to Linear and return the `data` payload. */
-async function linearRequest<T>(apiKey: string, query: string, variables: Record<string, unknown>): Promise<T> {
+async function linearRequest<T>(accessToken: string, query: string, variables: Record<string, unknown>): Promise<T> {
   const response = await fetch(LINEAR_GRAPHQL_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      // Personal API keys are sent bare (no "Bearer" prefix).
-      Authorization: apiKey,
+      // OAuth access tokens take the Bearer prefix (the old personal API
+      // key was sent bare — that's how Linear tells them apart).
+      Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify({ query, variables }),
   });
@@ -56,13 +67,14 @@ export interface CreatedIssue {
  * matches labels by ID, not name, so the LLM's label names (see pii.ts)
  * get translated here, at the last moment before the issue is created.
  */
-export async function getLabelIds(names: string[]): Promise<string[]> {
-  const apiKey = requireEnv("LINEAR_API_KEY");
+export async function getLabelIds(names: string[], auth: AuthInfo): Promise<string[]> {
+  // A read asks for `read` — the narrowest Linear scope that authorizes the labels query.
+  const accessToken = await exchangeForCredential(auth.token, LINEAR_API_URL, "read");
 
   const data = await linearRequest<{
     issueLabels: { nodes: { id: string }[] };
   }>(
-    apiKey,
+    accessToken,
     `query LabelIds($names: [String!]!) {
       issueLabels(filter: { name: { in: $names } }) {
         nodes { id }
@@ -74,27 +86,31 @@ export async function getLabelIds(names: string[]): Promise<string[]> {
   return data.issueLabels.nodes.map((node) => node.id);
 }
 
-/** Create a Linear issue in the workshop team. `priority` is a Linear priority int (0 none, 1 urgent … 4 low). */
+/** Create a Linear issue in the workshop team, attributed to the calling user. `priority` is a Linear priority int (0 none, 1 urgent … 4 low). */
 export async function createIssue(
   title: string,
   description: string,
   priority: number,
   labelIds: string[],
+  auth: AuthInfo,
 ): Promise<CreatedIssue> {
-  const apiKey = requireEnv("LINEAR_API_KEY");
-  const teamId = requireEnv("LINEAR_TEAM_ID");
+  // A Linear credential requested for exactly what this call does:
+  // issues:create is a sibling of write, not a subset — the request is
+  // recorded and policed on every exchange. This token acts as the calling
+  // user, so Linear attributes the issue to them natively.
+  const accessToken = await exchangeForCredential(auth.token, LINEAR_API_URL, "issues:create");
 
   const data = await linearRequest<{
     issueCreate: { success: boolean; issue: CreatedIssue | null };
   }>(
-    apiKey,
+    accessToken,
     `mutation CreateIssue($input: IssueCreateInput!) {
       issueCreate(input: $input) {
         success
         issue { id identifier url }
       }
     }`,
-    { input: { teamId, title, description, priority, labelIds } },
+    { input: { teamId: LINEAR_TEAM_ID, title, description, priority, labelIds } },
   );
 
   if (!data.issueCreate.success || !data.issueCreate.issue) {
@@ -103,12 +119,13 @@ export async function createIssue(
   return data.issueCreate.issue;
 }
 
-/** Move a Linear issue to the trash. */
-export async function trashIssue(issueId: string): Promise<void> {
-  const apiKey = requireEnv("LINEAR_API_KEY");
+/** Move a Linear issue to the trash, as the calling user. */
+export async function trashIssue(issueId: string, auth: AuthInfo): Promise<void> {
+  // Trashing is an edit to an existing issue, which is write territory.
+  const accessToken = await exchangeForCredential(auth.token, LINEAR_API_URL, "write");
 
   const data = await linearRequest<{ issueDelete: { success: boolean } }>(
-    apiKey,
+    accessToken,
     `mutation TrashIssue($id: String!) {
       issueDelete(id: $id) {
         success

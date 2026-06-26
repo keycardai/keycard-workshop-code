@@ -22,9 +22,18 @@ import { NoObjectGeneratedError, NoOutputGeneratedError, Output, generateText } 
 import { z } from "zod";
 import { exchangeForCredential } from "./keycard.js";
 
+/** Read a required env var, failing with a useful message instead of a cryptic error later. */
+function requireEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`Missing ${name} — copy .env.example to .env and fill in the workshop values.`);
+  }
+  return value;
+}
+
 // The Anthropic API base URL doubles as the vault resource identifier
 // registered in your zone — exact string match, like every exchange.
-const ANTHROPIC_API_URL = "https://api.anthropic.com";
+const ANTHROPIC_API_URL = requireEnv("ANTHROPIC_API_URL");
 
 /** The kinds of PII the masking pass looks for. */
 export const EntityTypeSchema = z.enum([
@@ -36,8 +45,6 @@ export const EntityTypeSchema = z.enum([
   "CREDIT_CARD",
   "CREDENTIAL",
 ]);
-
-export type EntityType = z.infer<typeof EntityTypeSchema>;
 
 /**
  * The workspace's issue labels, exactly as they exist in Linear. The model
@@ -110,10 +117,10 @@ export async function maskTicket(subject: string, body: string, auth: AuthInfo):
   // The vault answers with Anthropic's static API key instead of a scoped
   // token — the call site can't tell, but the audit log records both.
   const apiKey = await exchangeForCredential(auth.token, ANTHROPIC_API_URL);
-  // Pin the endpoint as well as the key. Left unset, the provider falls back
-  // to an ambient ANTHROPIC_BASE_URL env var — and the shell a coding agent
-  // launches this server from often has one. Nothing in this module should
-  // come from the environment; the credential already doesn't.
+  // Pin the endpoint as well as the key, from our own ANTHROPIC_API_URL. Left
+  // unset, the provider falls back to an ambient ANTHROPIC_BASE_URL env var —
+  // and the shell a coding agent launches this server from often has one. The
+  // URL is explicit config; the credential still never comes from the env.
   const anthropic = createAnthropic({ apiKey, baseURL: `${ANTHROPIC_API_URL}/v1` });
 
   try {

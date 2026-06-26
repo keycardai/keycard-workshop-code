@@ -79,8 +79,8 @@ There should be about 14K rows. Exactly 10,000 feels like a limit somewhere on y
 (
   'd2c6a9e4-1f3b-4d7c-b8e0-5a6f8c0d2e4b',
   '2026-06-05T11:02:00Z',
-  'Bartholomew Yzerman-Cole',
-  'bart.yc@umbrella-labs.test',
+  'Bartholomew Cole',
+  'bart.cole@umbrella-labs.test',
   '555-0163',
   'enterprise',
   'high',
@@ -91,8 +91,8 @@ There should be about 14K rows. Exactly 10,000 feels like a limit somewhere on y
 (
   'f7b3d5c8-4e0a-4b2d-9f6e-8c1a3b5d7e9f',
   '2026-06-06T08:30:00Z',
-  'Ottoline Marchetti-Vance',
-  'ottoline.mv@hooli.example',
+  'Ottoline Vance',
+  'ottoline.vance@hooli.example',
   '555-0199',
   'pro',
   'low',
