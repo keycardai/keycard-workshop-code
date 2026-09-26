@@ -2,6 +2,7 @@
   "name": "support-escalation-mcp",
   "version": "0.1.0",
   "description": "Support-ticket escalation MCP server for the Keycard workshop (reference implementation, secured through Chapter 6)",
+  "license": "Apache-2.0",
   "type": "module",
   "private": true,
   "engines": {
